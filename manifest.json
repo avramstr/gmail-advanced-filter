@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail סינון מתקדם",
+  "version": "1.0.0",
+  "description": "סינון מתקדם ב-Gmail עם בחירה מרובה: כוכב, תוויות, נקרא, תיקיות, שולחים ומילים מדויקות.",
+  "permissions": ["storage"],
+  "content_scripts": [{
+    "matches": ["https://mail.google.com/*"],
+    "js": ["content.js"],
+    "css": ["panel.css"],
+    "run_at": "document_idle"
+  }]
+}
