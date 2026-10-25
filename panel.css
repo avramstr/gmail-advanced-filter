@@ -27,3 +27,4 @@
 #gaf-clear{background:#fff;color:var(--gaf-primary);border:1px solid var(--gaf-outline)}
 #gaf-clear:hover{background:#ecf3fe}
 #gaf-panel .gaf-tpl{border-bottom:0;border-top:1px solid #e3e3e3;margin-top:12px}
+#gaf-panel .gaf-nolabel{margin-bottom:6px;font-weight:500}

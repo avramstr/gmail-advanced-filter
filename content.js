@@ -39,6 +39,8 @@
       h('input', { type: 'checkbox', value: q, className: 'gaf-cb', dataset: { group: key } }), text)));
 
   const labelBox = h('div', { className: 'gaf-list' });
+  // Kept outside labelBox so reloading the label list does not drop it; ORed with the labels.
+  const noLabelCb = h('input', { type: 'checkbox', value: 'has:nouserlabels', className: 'gaf-cb', dataset: { group: 'nolabel' } });
   const fromBox = h('textarea', { rows: 2, placeholder: 'כתובות שולח (שורה לכל אחת)' });
   const toBox = h('textarea', { rows: 2, placeholder: 'כתובות נמען (שורה לכל אחת)' });
   const exactBox = h('textarea', { rows: 2, placeholder: 'ביטויים מדויקים (שורה לכל ביטוי)' });
@@ -58,7 +60,8 @@
     checkboxGroup('מצב קריאה', 'read', GROUPS.read),
     checkboxGroup('תיקייה', 'box', GROUPS.box),
     checkboxGroup('נוסף', 'attach', GROUPS.attach),
-    h('fieldset', {}, h('legend', { textContent: 'תוויות' }), labelBox),
+    h('fieldset', {}, h('legend', { textContent: 'תוויות' }),
+      h('label', { className: 'gaf-nolabel' }, noLabelCb, 'ללא תווית'), labelBox),
     h('fieldset', {}, h('legend', { textContent: 'אימיילים' }), fromBox, toBox),
     h('fieldset', {}, h('legend', { textContent: 'מילים מדויקות' }), exactBox, exactMode, excludeBox),
     preview,
@@ -100,7 +103,9 @@
       // "נוסף" is cumulative (AND); the rest are alternatives within the group (OR).
       if (key === 'attach') parts.push(...vals); else parts.push(or(vals));
     }
-    parts.push(or([...labelBox.querySelectorAll('input:checked')].map(i => 'label:' + term(i.value.replace(/[\s/]+/g, '-')))));
+    const labels = [...labelBox.querySelectorAll('input:checked')].map(i => 'label:' + term(i.value.replace(/[\s/]+/g, '-')));
+    if (noLabelCb.checked) labels.unshift(noLabelCb.value);
+    parts.push(or(labels));
     parts.push(or(lines(fromBox.value).map(e => 'from:' + term(e))));
     parts.push(or(lines(toBox.value).map(e => 'to:' + term(e))));
     const phrases = exactBox.value.split('\n').map(x => x.trim()).filter(Boolean).map(quote);
