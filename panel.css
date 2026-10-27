@@ -1,6 +1,6 @@
 /* Gmail-like look (Material 3 tokens as used by Gmail). */
 #gaf-toggle,#gaf-panel{font-family:"Google Sans",Roboto,Arial,sans-serif;--gaf-primary:#0b57d0;--gaf-surface:#f8fafd;--gaf-outline:#c4c7c5;--gaf-text:#1f1f1f;--gaf-muted:#444746}
-#gaf-toggle{position:fixed;bottom:24px;inset-inline-start:24px;z-index:9999;display:flex;align-items:center;justify-content:center;background:#c2e7ff;color:#001d35;border:0;border-radius:16px;padding:0;width:56px;height:56px;font-size:14px;font-weight:500;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);transition:box-shadow .2s}
+#gaf-toggle{position:fixed;bottom:24px;inset-inline-start:24px;z-index:10000;direction:rtl;display:flex;align-items:center;justify-content:center;background:#c2e7ff;color:#001d35;border:0;border-radius:16px;padding:0;width:56px;height:56px;font-size:14px;font-weight:500;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);transition:box-shadow .2s}
 #gaf-toggle::before{content:"";width:24px;height:24px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z'/%3E%3C/svg%3E") center/contain no-repeat}
 #gaf-toggle:hover{box-shadow:0 2px 3px rgba(0,0,0,.3),0 6px 10px 4px rgba(0,0,0,.15)}
 #gaf-panel{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);z-index:9999;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 140px);overflow:auto;background:#fff;color:var(--gaf-text);border-radius:16px;box-shadow:0 4px 8px 3px rgba(60,64,67,.15),0 1px 3px rgba(60,64,67,.3);padding:0 16px 16px;font-size:14px;direction:rtl;display:none}
@@ -28,3 +28,8 @@
 #gaf-clear:hover{background:#ecf3fe}
 #gaf-panel .gaf-tpl{border-bottom:0;border-top:1px solid #e3e3e3;margin-top:12px}
 #gaf-panel .gaf-nolabel{margin-bottom:6px;font-weight:500}
+/* Oldest first: flip the thread list, then flip each row back upright. */
+body.gaf-reverse table:has(tr.zA){transform:scaleY(-1)}
+body.gaf-reverse tr.zA{transform:scaleY(-1)}
+#gaf-toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,120%);z-index:10000;background:#1f1f1f;color:#f2f2f2;border-radius:8px;padding:12px 20px;font:14px "Google Sans",Roboto,Arial,sans-serif;direction:rtl;opacity:0;transition:transform .2s,opacity .2s;pointer-events:none;max-width:calc(100vw - 32px)}
+#gaf-toast.show{transform:translate(-50%,0);opacity:1}

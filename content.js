@@ -41,6 +41,8 @@
   const labelBox = h('div', { className: 'gaf-list' });
   // Kept outside labelBox so reloading the label list does not drop it; ORed with the labels.
   const noLabelCb = h('input', { type: 'checkbox', value: 'has:nouserlabels', className: 'gaf-cb', dataset: { group: 'nolabel' } });
+  // Not a search term (Gmail has no sort operator); handled after the results load.
+  const oldestCb = h('input', { type: 'checkbox', value: 'oldest', className: 'gaf-cb', dataset: { group: 'sort' } });
   const fromBox = h('textarea', { rows: 2, placeholder: 'כתובות שולח (שורה לכל אחת)' });
   const toBox = h('textarea', { rows: 2, placeholder: 'כתובות נמען (שורה לכל אחת)' });
   const exactBox = h('textarea', { rows: 2, placeholder: 'ביטויים מדויקים (שורה לכל ביטוי)' });
@@ -64,6 +66,7 @@
       h('label', { className: 'gaf-nolabel' }, noLabelCb, 'ללא תווית'), labelBox),
     h('fieldset', {}, h('legend', { textContent: 'אימיילים' }), fromBox, toBox),
     h('fieldset', {}, h('legend', { textContent: 'מילים מדויקות' }), exactBox, exactMode, excludeBox),
+    h('fieldset', {}, h('legend', { textContent: 'מיון' }), h('label', {}, oldestCb, 'מהישן לחדש')),
     preview,
     h('div', { className: 'gaf-btns' },
       h('button', { id: 'gaf-search', textContent: 'סנן' }),
@@ -156,6 +159,47 @@
     saveTemplates(); renderTemplates(); tplName.value = '';
   });
 
+  // Oldest first: Gmail cannot sort ascending, so jump to the last results page (the oldest
+  // messages) and flip the rows of each page visually. Only the row order is reversed;
+  // pages still run newest to oldest, so "newer" in Gmail's pager is the next page here.
+  let oldestQuery = null;
+  const toast = h('div', { id: 'gaf-toast' });
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 5000);
+  }
+  const hashQuery = () => {
+    const m = location.hash.match(/^#search\/([^/]*)/);
+    return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null;
+  };
+  const setReversed = on => document.body.classList.toggle('gaf-reverse', on);
+  window.addEventListener('hashchange', () => {
+    if (oldestQuery !== null && hashQuery() !== oldestQuery) { oldestQuery = null; setReversed(false); }
+  });
+
+  // Reads the visible "1–50 of 1,234" pager; total is NaN when Gmail shows "of many".
+  function readPager() {
+    const pager = [...document.querySelectorAll('.Dj')].find(el => el.offsetParent);
+    const nums = pager ? [...pager.querySelectorAll('.ts')].map(s => parseInt(s.textContent.replace(/\D/g, ''), 10)) : [];
+    return nums.length >= 2 ? { start: nums[0], end: nums[1], total: nums[2] } : null;
+  }
+
+  function jumpToOldest(q) {
+    let tries = 0;
+    const timer = setInterval(() => {
+      // The previous view's pager stays visible for a moment after the hash changes.
+      if (++tries <= 5) return;
+      const p = readPager();
+      if (!p && ++tries < 40) return; // up to ~8 s for the results to load
+      clearInterval(timer);
+      if (!p || oldestQuery !== q) return;
+      if (!p.total) { showToast('יש יותר מדי תוצאות ו-Gmail לא מציג את מספרן – המיון הופעל רק בתוך העמוד.'); return; }
+      const lastPage = Math.ceil(p.total / (p.end - p.start + 1));
+      if (lastPage > 1) location.hash = '#search/' + encodeURIComponent(q) + '/p' + lastPage;
+    }, 200);
+  }
+
   const close = () => panel.classList.remove('open');
   panel.addEventListener('input', refresh);
   panel.addEventListener('change', refresh);
@@ -163,7 +207,10 @@
   panel.querySelector('#gaf-search').addEventListener('click', () => {
     const q = buildQuery();
     if (!q) return;
+    oldestQuery = oldestCb.checked ? q : null;
+    setReversed(oldestCb.checked);
     location.hash = '#search/' + encodeURIComponent(q);
+    if (oldestCb.checked) jumpToOldest(q);
     close();
   });
   panel.querySelector('#gaf-clear').addEventListener('click', () => setState({}));
@@ -171,6 +218,6 @@
     if (panel.classList.toggle('open')) loadLabels();
   });
 
-  document.body.append(panel, toggle);
+  document.body.append(panel, toggle, toast);
   refresh();
 })();
